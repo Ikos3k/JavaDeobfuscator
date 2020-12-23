@@ -2,7 +2,8 @@ package me.ANONIMUS.deobf.transformer.impl;
 
 import me.ANONIMUS.deobf.transformer.Transformer;
 import me.ANONIMUS.deobf.util.BytecodeUtils;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.util.Map;
 

@@ -11,14 +11,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
 public class Deobfuscator {
-
     private static Deobfuscator instance;
 
     private final List<Transformer> transformers;
@@ -113,7 +111,7 @@ public class Deobfuscator {
         }
     }
 
-    private void saveJar(JarOutputStream jarOutputStream) throws IOException, NoSuchAlgorithmException {
+    private void saveJar(JarOutputStream jarOutputStream) throws IOException {
         for (ClassNode classNode : this.classes.values()) {
             final JarEntry jarEntry = new JarEntry(classNode.name + ".class");
             final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -136,7 +134,6 @@ public class Deobfuscator {
             transformers.add(transformer);
         return this;
     }
-
 
     public Map<String, byte[]> getFiles() { return files; }
 

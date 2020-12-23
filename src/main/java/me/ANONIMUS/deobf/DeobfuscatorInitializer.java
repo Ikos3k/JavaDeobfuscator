@@ -3,19 +3,15 @@ package me.ANONIMUS.deobf;
 import me.ANONIMUS.deobf.transformer.impl.AnnotationRemoveTransformer;
 import me.ANONIMUS.deobf.transformer.impl.FixAccessTransformer;
 import me.ANONIMUS.deobf.transformer.impl.LocalVariableRemoverTransformer;
-import me.ANONIMUS.deobf.transformer.impl.name.ClassNameTransformer;
-import me.ANONIMUS.deobf.transformer.impl.name.FieldNameTransformer;
-import me.ANONIMUS.deobf.transformer.impl.string.SuperBlaubeere27StringTransformer;
+import me.ANONIMUS.deobf.transformer.impl.string.AllatoriStringTransformer;
 
 public class DeobfuscatorInitializer {
     public static void main(String[] args) {
         new Deobfuscator()
                 .addTransformer(new LocalVariableRemoverTransformer())
                 .addTransformer(new AnnotationRemoveTransformer())
-                .addTransformer(new FieldNameTransformer())
-                .addTransformer(new ClassNameTransformer())
                 .addTransformer(new FixAccessTransformer())
-                .addTransformer(new SuperBlaubeere27StringTransformer())
+                .addTransformer(new AllatoriStringTransformer(0))
                 .run(args);
     }
 }

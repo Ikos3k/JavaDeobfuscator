@@ -12,22 +12,19 @@ public class AlpheratzTeamStringTransformer extends Transformer {
     @Override
     public void visit(Map<String, ClassNode> classMap) {
         classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
-            if(!classNode.name.contains("/")) {
-                AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
-                for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
-                    if (abstractInsnNode.getType() == AbstractInsnNode.LDC_INSN) {
-                        LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
-                        AbstractInsnNode ldcInsnNodeNext = ldcInsnNode.getNext();
-                        if (ldcInsnNode.cst instanceof String) {
-                            if (ldcInsnNodeNext.getType() == AbstractInsnNode.METHOD_INSN) {
-                                MethodInsnNode methodInsnNode = (MethodInsnNode) ldcInsnNodeNext;
-                                final Type type = getType(classNode, methodInsnNode.name);
-                                if (type != null) {
-                                    String className = type.toString().replace("L", "").replace(";", "");
-//                                    System.err.println("[DEBUG] " + ldcInsnNode.cst + " -> " + decrypt((String) ldcInsnNode.cst, BytecodeUtils.computeConstantPoolSize(Deobfuscator.getInstance().getClasses().get(className))));
-                                    ldcInsnNode.cst = decrypt((String) ldcInsnNode.cst, BytecodeUtils.computeConstantPoolSize(Deobfuscator.getInstance().getClasses().get(className)));
-                                    methodNode.instructions.remove(ldcInsnNodeNext);
-                                }
+            AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
+            for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
+                if (abstractInsnNode.getType() == AbstractInsnNode.LDC_INSN) {
+                    LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
+                    AbstractInsnNode ldcInsnNodeNext = ldcInsnNode.getNext();
+                    if (ldcInsnNode.cst instanceof String) {
+                        if (ldcInsnNodeNext.getType() == AbstractInsnNode.METHOD_INSN) {
+                            MethodInsnNode methodInsnNode = (MethodInsnNode) ldcInsnNodeNext;
+                            final Type type = getType(classNode, methodInsnNode.name);
+                            if (type != null) {
+                                String className = type.toString().replace("L", "").replace(";", "");
+                                ldcInsnNode.cst = decrypt((String) ldcInsnNode.cst, BytecodeUtils.computeConstantPoolSize(Deobfuscator.getInstance().getClasses().get(className)));
+                                methodNode.instructions.remove(ldcInsnNodeNext);
                             }
                         }
                     }

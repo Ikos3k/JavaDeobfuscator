@@ -15,34 +15,31 @@ import java.util.Map;
 public class SuperBlaubeere27StringTransformer extends Transformer {
     @Override
     public void visit(Map<String, ClassNode> classMap) {
-        for (ClassNode classNode : classMap.values()) {
-            for (MethodNode methodNode : classNode.methods) {
-                AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
-                for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
-                    if (abstractInsnNode.getOpcode() == LDC) {
-                        LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
-                        if (ldcInsnNode.getNext() != null && ldcInsnNode.getNext() instanceof LdcInsnNode) {
-                            LdcInsnNode ldcInsnNodeNext = (LdcInsnNode) ldcInsnNode.getNext();
-                            if (ldcInsnNodeNext.getNext().getOpcode() == INVOKESTATIC) {
-                                String name = ((MethodInsnNode) ldcInsnNodeNext.getNext()).name;
-                                for (MethodNode mn : classNode.methods) {
-                                    if (mn.name.equals(name)) {
-                                        int method = getMethod(mn);
-//                                        System.err.println("[DEBUG] " + ldcInsnNodeNext.cst + " -> " + decrypt((String) ldcInsnNode.cst, (String) ldcInsnNodeNext.cst, method) + " [" + method + "]");
-                                        ldcInsnNodeNext.cst = decrypt((String) ldcInsnNode.cst, (String) ldcInsnNodeNext.cst, method);
-                                        methodNode.instructions.remove(ldcInsnNodeNext.getNext());
-                                        methodNode.instructions.remove(ldcInsnNode);
-                                    }
+        classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
+            AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
+            for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
+                if (abstractInsnNode.getOpcode() == LDC) {
+                    LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
+                    if (ldcInsnNode.getNext() != null && ldcInsnNode.getNext() instanceof LdcInsnNode) {
+                        LdcInsnNode ldcInsnNodeNext = (LdcInsnNode) ldcInsnNode.getNext();
+                        if (ldcInsnNodeNext.getNext().getOpcode() == INVOKESTATIC) {
+                            String name = ((MethodInsnNode) ldcInsnNodeNext.getNext()).name;
+                            for (MethodNode mn : classNode.methods) {
+                                if (mn.name.equals(name)) {
+                                    int method = getMethod(mn);
+                                    ldcInsnNodeNext.cst = decrypt((String) ldcInsnNode.cst, (String) ldcInsnNodeNext.cst, method);
+                                    methodNode.instructions.remove(ldcInsnNodeNext.getNext());
+                                    methodNode.instructions.remove(ldcInsnNode);
                                 }
                             }
                         }
                     }
                 }
             }
-        }
+        }));
     }
 
-    public boolean checkMethod(MethodNode methodNode, int[] opcodes, String[] strings) {
+    private boolean checkMethod(MethodNode methodNode, int[] opcodes, String[] strings) {
         if (methodNode.instructions == null
                 || methodNode.instructions.size() == 0
                 || opcodes.length > methodNode.instructions.size()) {
@@ -56,7 +53,7 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
         return Utils.hasInstructions(methodNode.instructions, opcodes);
     }
 
-    public String decrypt(String obj, String key, int method) {
+    private String decrypt(String obj, String key, int method) {
         switch (method) {
             case 0: {
                 return ll(obj, key);
@@ -74,7 +71,7 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
         return null;
     }
 
-    public int getMethod(MethodNode methodNode) {
+    private int getMethod(MethodNode methodNode) {
         if (checkMethod(methodNode, new int[]{ DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC }, new String[]{ "MD5", "Blowfish" })) {
             return 0;
         }
