@@ -25,7 +25,7 @@ public class FixAccessTransformer extends Transformer {
         if(BytecodeUtils.isPublic(access)) {
             acc |= ACC_PUBLIC;
         } else if(BytecodeUtils.isPrivate(access)) {
-            acc |= ACC_PUBLIC;
+            acc |= ACC_PRIVATE;
         } else if(BytecodeUtils.isProtected(access)) {
             acc |= ACC_PROTECTED;
         }
