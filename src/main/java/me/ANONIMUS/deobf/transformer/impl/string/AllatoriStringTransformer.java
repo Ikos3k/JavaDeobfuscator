@@ -1,6 +1,7 @@
 package me.ANONIMUS.deobf.transformer.impl.string;
 
 import me.ANONIMUS.deobf.transformer.Transformer;
+import me.ANONIMUS.deobf.util.BytecodeUtils;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -9,9 +10,11 @@ import java.util.Map;
 
 public class AllatoriStringTransformer extends Transformer {
     private final int mode;
+    private final boolean removeWatermark;
 
-    public AllatoriStringTransformer(int mode) {
+    public AllatoriStringTransformer(int mode, boolean removeWatermark) {
         this.mode = mode;
+        this.removeWatermark = removeWatermark;
     }
 
     @Override
@@ -30,6 +33,26 @@ public class AllatoriStringTransformer extends Transformer {
                 }
             }
         }));
+        if(removeWatermark) {
+            classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
+                if(methodNode.name.equals("main") && methodNode.desc.equals(createDescription(DESC_VOID, DESC_ARRAY, DESC_STRING)) && BytecodeUtils.isPublic(methodNode.access) && BytecodeUtils.isStatic(methodNode.access)) {
+                    AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
+                    for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
+                        if (abstractInsnNode instanceof LdcInsnNode) {
+                            LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
+                            if (ldcInsnNode.cst instanceof String) {
+                                if (ldcInsnNode.cst.equals("\n################################################\n#                                              #\n#        ## #   #    ## ### ### ##  ###        #\n#       # # #   #   # #  #  # # # #  #         #\n#       ### #   #   ###  #  # # ##   #         #\n#       # # ### ### # #  #  ### # # ###        #\n#                                              #\n# Obfuscation by Allatori Obfuscator v6.5 DEMO #\n#                                              #\n#           http://www.allatori.com            #\n#                                              #\n################################################\n")) {
+                                    methodNode.instructions.remove(ldcInsnNode.getPrevious());
+                                    methodNode.instructions.remove(ldcInsnNode.getNext().getNext());
+                                    methodNode.instructions.remove(ldcInsnNode.getNext());
+                                    methodNode.instructions.remove(ldcInsnNode);
+                                }
+                            }
+                        }
+                    }
+                }
+            }));
+        }
     }
 
     private String getDecryptedString(String string, int mode) {
@@ -106,22 +129,19 @@ public class AllatoriStringTransformer extends Transformer {
         int i = s.length();
         char[] a = new char[i];
         int i0 = i - 1;
-        while(true) {
-            if (i0 >= 0) {
-                int i1 = s.charAt(i0);
-                int i2 = i0 + -1;
-                int i3 = (char)(i1 ^ 105);
-                a[i0] = (char)i3;
-                if (i2 >= 0) {
-                    i0 = i2 + -1;
-                    int i4 = s.charAt(i2);
-                    int i5 = (char)(i4 ^ 59);
-                    a[i2] = (char)i5;
-                    continue;
-                }
+        while(i0 >= 0) {
+            int i1 = s.charAt(i0);
+            int i2 = i0 + -1;
+            int i3 = (char) (i1 ^ 105);
+            a[i0] = (char) i3;
+            if (i2 >= 0) {
+                i0 = i2 + -1;
+                int i4 = s.charAt(i2);
+                int i5 = (char) (i4 ^ 59);
+                a[i2] = (char) i5;
             }
-            return new String(a);
         }
+        return new String(a);
     }
 
     private String decrypt3(String s){

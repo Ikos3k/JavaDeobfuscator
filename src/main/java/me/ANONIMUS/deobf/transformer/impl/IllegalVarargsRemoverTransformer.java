@@ -12,7 +12,7 @@ public class IllegalVarargsRemoverTransformer extends Transformer {
         classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
             Type[] args = Type.getArgumentTypes(methodNode.desc);
             if (args.length > 0 && args[args.length - 1].getSort() != Type.ARRAY) {
-                methodNode.access &= ~ACC_VARARGS;
+                methodNode.access = removeAccess(methodNode.access, ACC_VARARGS);
             }
         }));
     }

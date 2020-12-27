@@ -1,7 +1,6 @@
 package me.ANONIMUS.deobf.transformer.impl.string;
 
 import me.ANONIMUS.deobf.transformer.Transformer;
-import me.ANONIMUS.deobf.util.Utils;
 import org.objectweb.asm.tree.*;
 
 import javax.crypto.Cipher;
@@ -18,7 +17,7 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
         classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
             AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
             for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
-                if (abstractInsnNode.getOpcode() == LDC) {
+                if (abstractInsnNode.getType() == AbstractInsnNode.LDC_INSN) {
                     LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
                     if (ldcInsnNode.getNext() != null && ldcInsnNode.getNext() instanceof LdcInsnNode) {
                         LdcInsnNode ldcInsnNodeNext = (LdcInsnNode) ldcInsnNode.getNext();
@@ -37,20 +36,6 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
                 }
             }
         }));
-    }
-
-    private boolean checkMethod(MethodNode methodNode, int[] opcodes, String[] strings) {
-        if (methodNode.instructions == null
-                || methodNode.instructions.size() == 0
-                || opcodes.length > methodNode.instructions.size()) {
-            return false;
-        }
-
-        if (strings.length > 0) {
-            return Utils.hasInstructions(methodNode.instructions, opcodes) && Utils.hasStrings(methodNode.instructions, strings);
-        }
-
-        return Utils.hasInstructions(methodNode.instructions, opcodes);
     }
 
     private String decrypt(String obj, String key, int method) {
@@ -72,17 +57,19 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
     }
 
     private int getMethod(MethodNode methodNode) {
-        if (checkMethod(methodNode, new int[]{ DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC }, new String[]{ "MD5", "Blowfish" })) {
-            return 0;
-        }
-        if (checkMethod(methodNode, new int[]{ DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, BIPUSH }, new String[]{ "MD5" })) {
-            return 1;
-        }
-        if (checkMethod(methodNode, new int[]{ DUP, LDC, INVOKESTATIC, ALOAD, LDC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC }, new String[]{ "SHA-256", "AES" })) {
-            return 2;
-        }
-        if (checkMethod(methodNode, new int[]{ DUP, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, GETSTATIC, INVOKESPECIAL}, new String[0])) {
-            return 3;
+        if(methodNode.desc.equals(createDescription(DESC_STRING, DESC_STRING, DESC_STRING))) {
+            if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC) && hasStrings(methodNode.instructions, "MD5", "Blowfish")) {
+                return 0;
+            }
+            if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, BIPUSH) && hasStrings(methodNode.instructions, "MD5")) {
+                return 1;
+            }
+            if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, LDC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC) && hasStrings(methodNode.instructions, "SHA-256", "AES")) {
+                return 2;
+            }
+            if (hasInstructions(methodNode.instructions, DUP, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, GETSTATIC, INVOKESPECIAL)) {
+                return 3;
+            }
         }
         return -1;
     }

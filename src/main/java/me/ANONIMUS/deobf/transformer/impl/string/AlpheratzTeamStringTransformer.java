@@ -16,15 +16,17 @@ public class AlpheratzTeamStringTransformer extends Transformer {
             for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
                 if (abstractInsnNode.getType() == AbstractInsnNode.LDC_INSN) {
                     LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
-                    AbstractInsnNode ldcInsnNodeNext = ldcInsnNode.getNext();
+                    AbstractInsnNode abInsnNodeNEXT = ldcInsnNode.getNext();
                     if (ldcInsnNode.cst instanceof String) {
-                        if (ldcInsnNodeNext.getType() == AbstractInsnNode.METHOD_INSN) {
-                            MethodInsnNode methodInsnNode = (MethodInsnNode) ldcInsnNodeNext;
-                            final Type type = getType(classNode, methodInsnNode.name);
-                            if (type != null) {
-                                String className = type.toString().replace("L", "").replace(";", "");
-                                ldcInsnNode.cst = decrypt((String) ldcInsnNode.cst, BytecodeUtils.computeConstantPoolSize(Deobfuscator.getInstance().getClasses().get(className)));
-                                methodNode.instructions.remove(ldcInsnNodeNext);
+                        if (abInsnNodeNEXT.getType() == AbstractInsnNode.METHOD_INSN) {
+                            MethodInsnNode methodInsnNode = (MethodInsnNode) abInsnNodeNEXT;
+                            if(methodInsnNode.name.toLowerCase().startsWith("i")) {
+                                final Type cType = getClassType(classNode, methodInsnNode.name);
+                                if (cType != null) {
+                                    String className = cType.toString().replace("L", "").replace(";", "");
+                                    ldcInsnNode.cst = decrypt((String) ldcInsnNode.cst, BytecodeUtils.computeConstantPoolSize(Deobfuscator.getInstance().getClasses().get(className)));
+                                    methodNode.instructions.remove(abInsnNodeNEXT);
+                                }
                             }
                         }
                     }
@@ -33,9 +35,9 @@ public class AlpheratzTeamStringTransformer extends Transformer {
         }));
     }
 
-    private static Type getType(ClassNode classNode, String name) {
+    private static Type getClassType(ClassNode classNode, String name) {
         for (MethodNode mn : classNode.methods) {
-            if (mn.name.toLowerCase().startsWith("i") && mn.name.equals(name)) {
+            if (mn.name.equals(name)) {
                 for(AbstractInsnNode ab : mn.instructions.toArray()) {
                     if(ab.getType() == AbstractInsnNode.METHOD_INSN) {
                         MethodInsnNode mn2 = (MethodInsnNode) ab;
@@ -56,7 +58,6 @@ public class AlpheratzTeamStringTransformer extends Transformer {
 
     private static String decrypt(final String str, int key) {
         final StackTraceElement[] stackTrace = new Throwable().getStackTrace();
-
         final char[] c = str.toCharArray();
         for(int i = 0; i < c.length; i++) {
             c[i] ^= (char) key;

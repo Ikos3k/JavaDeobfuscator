@@ -8,8 +8,6 @@ import java.util.Map;
 public class LocalVariableRemoverTransformer extends Transformer {
     @Override
     public void visit(Map<String, ClassNode> classMap) {
-        classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
-            methodNode.localVariables = null;
-        }));
+        classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> methodNode.localVariables = null));
     }
 }

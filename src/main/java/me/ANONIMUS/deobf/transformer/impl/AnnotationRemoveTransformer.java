@@ -1,6 +1,5 @@
 package me.ANONIMUS.deobf.transformer.impl;
 
-
 import me.ANONIMUS.deobf.transformer.Transformer;
 import org.objectweb.asm.tree.ClassNode;
 

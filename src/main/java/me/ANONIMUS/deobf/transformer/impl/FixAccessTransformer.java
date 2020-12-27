@@ -11,23 +11,34 @@ public class FixAccessTransformer extends Transformer {
     public void visit(Map<String, ClassNode> classMap) {
         classMap.values().forEach(classNode -> {
             classNode.access = fixAccess(classNode.access);
-            classNode.methods.forEach(methodNode -> {
-               methodNode.access = fixAccess(methodNode.access);
-            });
-            classNode.fields.forEach(fieldNode -> {
-               fieldNode.access = fixAccess(fieldNode.access);
-            });
+            classNode.methods.forEach(methodNode -> methodNode.access = fixAccess(methodNode.access));
+            classNode.fields.forEach(fieldNode -> fieldNode.access = fixAccess(fieldNode.access));
         });
     }
 
     public int fixAccess(int access) {
         int acc = 0;
         if(BytecodeUtils.isPublic(access)) {
-            acc |= ACC_PUBLIC;
+            acc = addAccess(ACC_PUBLIC);
         } else if(BytecodeUtils.isPrivate(access)) {
-            acc |= ACC_PRIVATE;
+            acc = addAccess(ACC_PRIVATE);
         } else if(BytecodeUtils.isProtected(access)) {
-            acc |= ACC_PROTECTED;
+            acc = addAccess(ACC_PROTECTED);
+        }
+        if(BytecodeUtils.isStatic(access)) {
+            acc = addAccess(ACC_STATIC);
+        }
+        if(BytecodeUtils.isAbstract(access)) {
+            acc = addAccess(ACC_ABSTRACT);
+        }
+        if(BytecodeUtils.isInterface(access)) {
+            acc = addAccess(ACC_INTERFACE);
+        }
+        if(BytecodeUtils.isAnnotation(access)) {
+            acc = addAccess(ACC_ANNOTATION);
+        }
+        if(BytecodeUtils.isSuper(access)) {
+            acc = addAccess(ACC_SUPER);
         }
         return acc;
     }
