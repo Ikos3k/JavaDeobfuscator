@@ -6,16 +6,22 @@ import org.objectweb.asm.tree.LdcInsnNode;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public class SimpleAsmUtils {
     public String createDescription(String returnType, String... arguments) {
         StringBuilder desc = new StringBuilder();
         if (arguments.length > 0)
             desc.append("(");
-        Arrays.stream(arguments).forEach(desc::append);
+        if (!returnType.equals("["))
+            Arrays.stream(arguments).forEach(desc::append);
+        else
+            IntStream.range(1, arguments.length).forEach(i -> desc.append(arguments[i]));
         if (arguments.length > 0)
             desc.append(")");
         desc.append(returnType);
+        if(returnType.equals("["))
+            desc.append(arguments[0]);
         return desc.toString();
     }
 
