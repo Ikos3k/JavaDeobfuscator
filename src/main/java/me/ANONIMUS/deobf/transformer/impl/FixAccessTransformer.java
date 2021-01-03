@@ -17,14 +17,7 @@ public class FixAccessTransformer extends Transformer {
     }
 
     public int fixAccess(int access) {
-        int acc = 0;
-        if(BytecodeUtils.isPublic(access)) {
-            acc = addAccess(ACC_PUBLIC);
-        } else if(BytecodeUtils.isPrivate(access)) {
-            acc = addAccess(ACC_PRIVATE);
-        } else if(BytecodeUtils.isProtected(access)) {
-            acc = addAccess(ACC_PROTECTED);
-        }
+        int acc = addAccess(ACC_PUBLIC);
         if(BytecodeUtils.isStatic(access)) {
             acc = addAccess(ACC_STATIC);
         }

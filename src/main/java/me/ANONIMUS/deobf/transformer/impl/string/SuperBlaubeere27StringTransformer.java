@@ -7,34 +7,38 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Map;
+import java.util.*;
 
 public class SuperBlaubeere27StringTransformer extends Transformer {
     @Override
     public void visit(Map<String, ClassNode> classMap) {
-        classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
-            AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
-            for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
-                if (abstractInsnNode.getType() == AbstractInsnNode.LDC_INSN) {
-                    LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
-                    if (ldcInsnNode.getNext() != null && ldcInsnNode.getNext() instanceof LdcInsnNode) {
-                        LdcInsnNode ldcInsnNodeNext = (LdcInsnNode) ldcInsnNode.getNext();
-                        if (ldcInsnNodeNext.getNext().getOpcode() == INVOKESTATIC) {
-                            String name = ((MethodInsnNode) ldcInsnNodeNext.getNext()).name;
-                            for (MethodNode mn : classNode.methods) {
-                                if (mn.name.equals(name)) {
-                                    ldcInsnNodeNext.cst = decrypt(mn, (String) ldcInsnNode.cst, (String) ldcInsnNodeNext.cst);
-                                    methodNode.instructions.remove(ldcInsnNodeNext.getNext());
-                                    methodNode.instructions.remove(ldcInsnNode);
+        classMap.values().forEach(classNode -> {
+            List<MethodNode> methods = new ArrayList<>();
+            classNode.methods.forEach(methodNode -> {
+                AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
+                for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
+                    if (abstractInsnNode.getType() == AbstractInsnNode.LDC_INSN) {
+                        LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
+                        if (ldcInsnNode.getNext() != null && ldcInsnNode.getNext() instanceof LdcInsnNode) {
+                            LdcInsnNode ldcInsnNodeNext = (LdcInsnNode) ldcInsnNode.getNext();
+                            if (ldcInsnNodeNext.getNext().getOpcode() == INVOKESTATIC) {
+                                String name = ((MethodInsnNode) ldcInsnNodeNext.getNext()).name;
+                                for (MethodNode mn : classNode.methods) {
+                                    if (mn.name.equals(name)) {
+                                        ldcInsnNodeNext.cst = decrypt(mn, (String) ldcInsnNode.cst, (String) ldcInsnNodeNext.cst);
+                                        methodNode.instructions.remove(ldcInsnNodeNext.getNext());
+                                        methodNode.instructions.remove(ldcInsnNode);
+                                        if(!methods.contains(mn))
+                                            methods.add(mn);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-        }));
+            });
+            classNode.methods.removeAll(methods);
+        });
     }
 
     private String decrypt(MethodNode methodNode, String obj, String key) {

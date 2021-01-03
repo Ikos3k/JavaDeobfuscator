@@ -35,7 +35,7 @@ public class AlpheratzTeamStringTransformer extends Transformer {
         }));
     }
 
-    private static Type getClassType(ClassNode classNode, String name) {
+    private Type getClassType(ClassNode classNode, String name) {
         for (MethodNode mn : classNode.methods) {
             if (mn.name.equals(name)) {
                 for(AbstractInsnNode ab : mn.instructions.toArray()) {
@@ -56,7 +56,7 @@ public class AlpheratzTeamStringTransformer extends Transformer {
         return null;
     }
 
-    private static String decrypt(final String str, int key) {
+    private String decrypt(final String str, int key) {
         final StackTraceElement[] stackTrace = new Throwable().getStackTrace();
         final char[] c = str.toCharArray();
         for(int i = 0; i < c.length; i++) {

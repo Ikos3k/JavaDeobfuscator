@@ -22,7 +22,7 @@ public class MethodNameTransformer extends Transformer {
         for (MethodNode m : methods) {
             ClassNode owner = getOwner(classMap, m);
 
-            if (m.name.indexOf('<') != -1 || BytecodeUtils.isNative(m.access) || BytecodeUtils.isMainMethod(m)) {
+            if (BytecodeUtils.isInitializer(m) || BytecodeUtils.isNative(m.access) || BytecodeUtils.isMainMethod(m)) {
                 continue;
             }
             Stack<ClassNode> nodeStack = new Stack<>();

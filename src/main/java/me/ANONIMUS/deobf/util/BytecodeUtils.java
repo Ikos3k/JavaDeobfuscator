@@ -18,6 +18,8 @@ public class BytecodeUtils {
 
     public static boolean matchMethodNode(MethodInsnNode methodInsnNode, String s) { return s.equals(methodInsnNode.owner + "." + methodInsnNode.name + ":" + methodInsnNode.desc); }
 
+    public static boolean isInitializer(final MethodNode methodNode) { return methodNode.name.contains("<") || methodNode.name.contains(">"); }
+
     public static AbstractInsnNode getNumberInsn(int number) {
         if (number >= -1 && number <= 5) {
             return new InsnNode(number + 3);
@@ -44,16 +46,6 @@ public class BytecodeUtils {
     }
 
     public static void applyMappings(Map<String, ClassNode> classMap, Map<String, String> remap) {
-        for (Map.Entry<String, String> entry : remap.entrySet()) {
-            String k = entry.getKey();
-            String v = entry.getValue();
-            if (k.equals(v))
-                continue;
-            int n = k.indexOf('.');
-            if (n != -1 && v.length() >= n && v.substring(n).equals(k)) {
-                continue;
-            }
-        }
         SimpleRemapper remapper = new SimpleRemapper(remap);
         for (ClassNode node : new ArrayList<>(classMap.values())) {
             ClassNode copy = new ClassNode();

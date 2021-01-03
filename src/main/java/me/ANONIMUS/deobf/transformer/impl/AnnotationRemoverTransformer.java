@@ -5,7 +5,7 @@ import org.objectweb.asm.tree.ClassNode;
 
 import java.util.Map;
 
-public class AnnotationRemoveTransformer extends Transformer {
+public class AnnotationRemoverTransformer extends Transformer {
     @Override
     public void visit(Map<String, ClassNode> classMap) {
         classMap.values().forEach(classNode -> {

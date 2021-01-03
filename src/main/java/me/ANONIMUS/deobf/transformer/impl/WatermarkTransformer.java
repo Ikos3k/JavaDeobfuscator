@@ -19,7 +19,7 @@ public class WatermarkTransformer extends Transformer {
         methodNode.visitCode();
         methodNode.visitLdcInsn("github: " + "https://github.com/Ikos3k");
         methodNode.visitVarInsn(ASTORE, 0);
-        methodNode.visitLdcInsn("obf by ANONIMUS");
+        methodNode.visitLdcInsn("deobf by ANONIMUS");
         methodNode.visitInsn(ARETURN);
         methodNode.visitEnd();
         return methodNode;
