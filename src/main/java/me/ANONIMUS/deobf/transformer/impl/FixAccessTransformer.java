@@ -17,21 +17,21 @@ public class FixAccessTransformer extends Transformer {
     }
 
     public int fixAccess(int access) {
-        int acc = addAccess(ACC_PUBLIC);
+        int acc = addAccess(0, ACC_PUBLIC);
         if(BytecodeUtils.isStatic(access)) {
-            acc = addAccess(ACC_STATIC);
+            acc = addAccess(access, ACC_STATIC);
         }
         if(BytecodeUtils.isAbstract(access)) {
-            acc = addAccess(ACC_ABSTRACT);
+            acc = addAccess(access, ACC_ABSTRACT);
         }
         if(BytecodeUtils.isInterface(access)) {
-            acc = addAccess(ACC_INTERFACE);
+            acc = addAccess(access, ACC_INTERFACE);
         }
         if(BytecodeUtils.isAnnotation(access)) {
-            acc = addAccess(ACC_ANNOTATION);
+            acc = addAccess(access, ACC_ANNOTATION);
         }
         if(BytecodeUtils.isSuper(access)) {
-            acc = addAccess(ACC_SUPER);
+            acc = addAccess(access, ACC_SUPER);
         }
         return acc;
     }
