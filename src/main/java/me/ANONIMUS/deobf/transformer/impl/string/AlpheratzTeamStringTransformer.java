@@ -23,7 +23,7 @@ public class AlpheratzTeamStringTransformer extends Transformer {
                             if(methodInsnNode.name.toLowerCase().startsWith("i")) {
                                 final Type cType = getClassType(classNode, methodInsnNode.name);
                                 if (cType != null) {
-                                    String className = cType.toString().replace("L", "").replace(";", "");
+                                    String className = cType.toString().replaceFirst("L", "").replace(";", "");
                                     ldcInsnNode.cst = decrypt((String) ldcInsnNode.cst, BytecodeUtils.computeConstantPoolSize(Deobfuscator.getInstance().getClasses().get(className)));
                                     methodNode.instructions.remove(abInsnNodeNEXT);
                                 }
@@ -57,12 +57,9 @@ public class AlpheratzTeamStringTransformer extends Transformer {
     }
 
     private String decrypt(final String str, int key) {
-        final StackTraceElement[] stackTrace = new Throwable().getStackTrace();
         final char[] c = str.toCharArray();
         for(int i = 0; i < c.length; i++) {
             c[i] ^= (char) key;
-            c[i] ^= (char)stackTrace[0].getClassName().hashCode();
-            c[i] ^= (char)stackTrace[1].getClassName().hashCode();
         }
         return new String(c);
     }
