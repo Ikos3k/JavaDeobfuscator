@@ -5,7 +5,6 @@ import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LdcInsnNode;
 
 import java.util.Arrays;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 public class SimpleAsmUtils {
@@ -23,13 +22,6 @@ public class SimpleAsmUtils {
         if(returnType.equals("["))
             desc.append(arguments[0]);
         return desc.toString();
-    }
-
-    public String randomDescription() {
-        String[] descriptions = new String[]{
-                "Ljava/lang/Object;", "Ljava/lang/String;", "Ljava/lang/Integer;", "Ljava/lang/Class;", "I", "J", "F", "D", "S", "Z", "C", "B"
-        };
-        return descriptions[new Random().nextInt(descriptions.length)];
     }
 
     public int addAccess(int access, int... add) {

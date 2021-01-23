@@ -24,7 +24,7 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
                             if (ldcInsnNodeNext.getNext().getOpcode() == INVOKESTATIC) {
                                 String name = ((MethodInsnNode) ldcInsnNodeNext.getNext()).name;
                                 for (MethodNode mn : classNode.methods) {
-                                    if (mn.name.equals(name)) {
+                                    if (mn.name.equals(name) && mn.desc.equals(createDescription(DESC_STRING, DESC_STRING, DESC_STRING))) {
                                         ldcInsnNodeNext.cst = decrypt(mn, (String) ldcInsnNode.cst, (String) ldcInsnNodeNext.cst);
                                         methodNode.instructions.remove(ldcInsnNodeNext.getNext());
                                         methodNode.instructions.remove(ldcInsnNode);
@@ -42,19 +42,17 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
     }
 
     private String decrypt(MethodNode methodNode, String obj, String key) {
-        if(methodNode.desc.equals(createDescription(DESC_STRING, DESC_STRING, DESC_STRING))) {
-            if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC) && hasStrings(methodNode.instructions, "MD5", "Blowfish")) {
-                return ll(obj, key);
-            }
-            if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, BIPUSH) && hasStrings(methodNode.instructions, "MD5")) {
-                return lI(obj, key);
-            }
-            if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, LDC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC) && hasStrings(methodNode.instructions, "SHA-256", "AES")) {
-                return l(obj, key);
-            }
-            if (hasInstructions(methodNode.instructions, DUP, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, GETSTATIC, INVOKESPECIAL)) {
-                return I(obj, key);
-            }
+        if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC) && hasStrings(methodNode.instructions, "MD5", "Blowfish")) {
+            return ll(obj, key);
+        }
+        if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, BIPUSH) && hasStrings(methodNode.instructions, "MD5")) {
+            return lI(obj, key);
+        }
+        if (hasInstructions(methodNode.instructions, DUP, LDC, INVOKESTATIC, ALOAD, LDC, INVOKEVIRTUAL, INVOKEVIRTUAL, LDC) && hasStrings(methodNode.instructions, "SHA-256", "AES")) {
+            return l(obj, key);
+        }
+        if (hasInstructions(methodNode.instructions, DUP, INVOKESTATIC, ALOAD, GETSTATIC, INVOKEVIRTUAL, INVOKEVIRTUAL, GETSTATIC, INVOKESPECIAL)) {
+            return I(obj, key);
         }
         return null;
     }
