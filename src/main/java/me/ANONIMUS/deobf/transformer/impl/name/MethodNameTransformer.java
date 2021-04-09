@@ -1,7 +1,6 @@
 package me.ANONIMUS.deobf.transformer.impl.name;
 
 import me.ANONIMUS.deobf.transformer.Transformer;
-import me.ANONIMUS.deobf.util.BytecodeUtils;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -22,7 +21,7 @@ public class MethodNameTransformer extends Transformer {
         for (MethodNode m : methods) {
             ClassNode owner = getOwner(classMap, m);
 
-            if (BytecodeUtils.isInitializer(m) || BytecodeUtils.isNative(m.access) || BytecodeUtils.isMainMethod(m)) {
+            if (isInitializer(m) || isNative(m.access) || isMainMethod(m)) {
                 continue;
             }
             Stack<ClassNode> nodeStack = new Stack<>();
@@ -57,7 +56,7 @@ public class MethodNameTransformer extends Transformer {
             }
             i++;
         }
-        BytecodeUtils.applyMappings(classMap, remap);
+        applyMappings(classMap, remap);
     }
 
     private MethodNode getMethod(ClassNode node, String name, String desc) {

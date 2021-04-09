@@ -1,7 +1,6 @@
 package me.ANONIMUS.deobf.transformer.impl.name;
 
 import me.ANONIMUS.deobf.transformer.Transformer;
-import me.ANONIMUS.deobf.util.BytecodeUtils;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
@@ -34,7 +33,7 @@ public class FieldNameTransformer extends Transformer {
             }
             i++;
         }
-        BytecodeUtils.applyMappings(classMap, remap);
+        applyMappings(classMap, remap);
     }
 
     private ClassNode getOwner(FieldNode f, Map<String, ClassNode> classMap) {

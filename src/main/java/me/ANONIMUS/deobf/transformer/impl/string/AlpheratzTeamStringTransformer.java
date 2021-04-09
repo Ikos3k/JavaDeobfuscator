@@ -2,7 +2,6 @@ package me.ANONIMUS.deobf.transformer.impl.string;
 
 import me.ANONIMUS.deobf.Deobfuscator;
 import me.ANONIMUS.deobf.transformer.Transformer;
-import me.ANONIMUS.deobf.util.BytecodeUtils;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
@@ -24,7 +23,7 @@ public class AlpheratzTeamStringTransformer extends Transformer {
                                 final Type cType = getClassType(classNode, methodInsnNode.name);
                                 if (cType != null) {
                                     String className = cType.toString().replaceFirst("L", "").replace(";", "");
-                                    ldcInsnNode.cst = decrypt((String) ldcInsnNode.cst, BytecodeUtils.computeConstantPoolSize(Deobfuscator.getInstance().getClasses().get(className)));
+                                    ldcInsnNode.cst = decrypt((String) ldcInsnNode.cst, computeConstantPoolSize(Deobfuscator.getInstance().getClasses().get(className)));
                                     methodNode.instructions.remove(abInsnNodeNEXT);
                                 }
                             }

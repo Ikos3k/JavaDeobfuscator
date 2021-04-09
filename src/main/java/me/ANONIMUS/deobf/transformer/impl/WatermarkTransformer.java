@@ -1,7 +1,6 @@
 package me.ANONIMUS.deobf.transformer.impl;
 
 import me.ANONIMUS.deobf.transformer.Transformer;
-import me.ANONIMUS.deobf.util.BytecodeUtils;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -11,7 +10,7 @@ public class WatermarkTransformer extends Transformer {
     @Override
     public void visit(Map<String, ClassNode> classMap) {
         final MethodNode methodNode = createMethod();
-        classMap.values().stream().filter(classNode -> !BytecodeUtils.isInterface(classNode.access)).forEach(classNode -> classNode.methods.add(methodNode));
+        classMap.values().stream().filter(classNode -> !isInterface(classNode.access)).forEach(classNode -> classNode.methods.add(methodNode));
     }
 
     private MethodNode createMethod() {
@@ -19,7 +18,7 @@ public class WatermarkTransformer extends Transformer {
         methodNode.visitCode();
         methodNode.visitLdcInsn("github: " + "https://github.com/Ikos3k");
         methodNode.visitVarInsn(ASTORE, 0);
-        methodNode.visitLdcInsn("deobf by ANONIMUS");
+        methodNode.visitLdcInsn("deobf by ANONIMUS(Ikos3k)");
         methodNode.visitInsn(ARETURN);
         methodNode.visitEnd();
         return methodNode;

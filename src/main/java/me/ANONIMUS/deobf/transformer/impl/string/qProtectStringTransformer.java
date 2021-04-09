@@ -28,9 +28,10 @@ public class qProtectStringTransformer extends Transformer {
     private String decode(String var0) {
         try {
             char[] var1 = var0.toCharArray();
-            int[] var3 = new int[] {18, 42886, 42197, 40977, 43365, 32022, 36394, 9242, 35671, 13335, 18};
+            char[] var3 = new char[] {'䠲', '⎅', '⎆', '頓', '鄥', '䖂', 'ओ', '㐢', 'ࡓ', 'ܤ'};
+            char[] var10000 = new char[] {'䠠', '萃', '蝓', '㠂', '㡀', '㢔', '蜹', 'း', '茄', '㌳'};
             for(int i = 0; i < var1.length; i++) {
-                var1[i] ^= var3[i];
+                var1[i] ^= var3[i % var3.length] ^ var10000[i % var10000.length];
             }
             return new String(var1);
         } catch (Exception var7) {

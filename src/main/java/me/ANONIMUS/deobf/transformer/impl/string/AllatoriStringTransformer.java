@@ -1,7 +1,6 @@
 package me.ANONIMUS.deobf.transformer.impl.string;
 
 import me.ANONIMUS.deobf.transformer.Transformer;
-import me.ANONIMUS.deobf.util.BytecodeUtils;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -35,7 +34,7 @@ public class AllatoriStringTransformer extends Transformer {
         }));
         if(removeWatermark) {
             classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
-                if(methodNode.name.equals("main") && methodNode.desc.equals(createDescription(DESC_VOID, DESC_ARRAY, DESC_STRING)) && BytecodeUtils.isPublic(methodNode.access) && BytecodeUtils.isStatic(methodNode.access)) {
+                if(isMainMethod(methodNode)) {
                     AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
                     for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
                         if (abstractInsnNode instanceof LdcInsnNode) {

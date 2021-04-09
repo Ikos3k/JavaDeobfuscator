@@ -1,7 +1,6 @@
 package me.ANONIMUS.deobf.transformer.impl.name;
 
 import me.ANONIMUS.deobf.transformer.Transformer;
-import me.ANONIMUS.deobf.util.BytecodeUtils;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.util.*;
@@ -10,6 +9,7 @@ public class ClassNameTransformer extends Transformer {
     @Override
     public void visit(Map<String, ClassNode> classMap) {
         Map<String, String> remap = new HashMap<>();
+
         List<String> keys = new ArrayList<>(classMap.keySet());
         Collections.shuffle(keys);
         int i = 0;
@@ -19,6 +19,6 @@ public class ClassNameTransformer extends Transformer {
             remap.put(cn.name, name);
             i++;
         }
-        BytecodeUtils.applyMappings(classMap, remap);
+        applyMappings(classMap, remap);
     }
 }
