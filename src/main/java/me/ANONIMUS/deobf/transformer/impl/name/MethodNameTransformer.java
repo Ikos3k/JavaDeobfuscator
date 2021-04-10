@@ -5,7 +5,6 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 public class MethodNameTransformer extends Transformer {
     @Override
@@ -19,7 +18,7 @@ public class MethodNameTransformer extends Transformer {
         int i = 0;
         methods:
         for (MethodNode m : methods) {
-            ClassNode owner = getOwner(classMap, m);
+            ClassNode owner = getOwner(m, classMap);
 
             if (isInitializer(m) || isNative(m.access) || isMainMethod(m)) {
                 continue;
@@ -43,34 +42,14 @@ public class MethodNameTransformer extends Transformer {
                 }
                 nodeStack.addAll(interfaces);
             }
-            String name = "method_" + i;
             nodeStack.add(owner);
             while (nodeStack.size() > 0) {
                 ClassNode node = nodeStack.pop();
-                String key = node.name + '.' + m.name + m.desc;
-                remap.put(key, name);
-                classMap.values().forEach(c -> {
-                    if (c.superName.equals(node.name) || c.interfaces.contains(node.name))
-                        nodeStack.push(c);
-                });
+                remap.put(node.name + '.' + m.name + m.desc, "method_" + i);
+                classMap.values().stream().filter(c -> c.superName.equals(node.name) || c.interfaces.contains(node.name)).forEach(nodeStack::push);
             }
             i++;
         }
         applyMappings(classMap, remap);
-    }
-
-    private MethodNode getMethod(ClassNode node, String name, String desc) {
-        return findFirst(node.methods, m -> m.name.equals(name) && m.desc.equals(desc));
-    }
-
-    private ClassNode getOwner(Map<String, ClassNode> classMap, MethodNode m) {
-        return findFirst(classMap.values(), c -> c.methods.contains(m));
-    }
-
-    private <T> T findFirst(Collection<T> collection, Predicate<T> predicate) {
-        for (T t : collection)
-            if (predicate.test(t))
-                return t;
-        return null;
     }
 }

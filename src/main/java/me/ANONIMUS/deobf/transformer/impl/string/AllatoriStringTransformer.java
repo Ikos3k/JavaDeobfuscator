@@ -39,13 +39,11 @@ public class AllatoriStringTransformer extends Transformer {
                     for (AbstractInsnNode abstractInsnNode : abstractInsnNodes) {
                         if (abstractInsnNode instanceof LdcInsnNode) {
                             LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
-                            if (ldcInsnNode.cst instanceof String) {
-                                if (ldcInsnNode.cst.equals("\n################################################\n#                                              #\n#        ## #   #    ## ### ### ##  ###        #\n#       # # #   #   # #  #  # # # #  #         #\n#       ### #   #   ###  #  # # ##   #         #\n#       # # ### ### # #  #  ### # # ###        #\n#                                              #\n# Obfuscation by Allatori Obfuscator v6.5 DEMO #\n#                                              #\n#           http://www.allatori.com            #\n#                                              #\n################################################\n")) {
-                                    methodNode.instructions.remove(ldcInsnNode.getPrevious());
-                                    methodNode.instructions.remove(ldcInsnNode.getNext().getNext());
-                                    methodNode.instructions.remove(ldcInsnNode.getNext());
-                                    methodNode.instructions.remove(ldcInsnNode);
-                                }
+                            if (ldcInsnNode.cst instanceof String && ldcInsnNode.cst.equals("\n################################################\n#                                              #\n#        ## #   #    ## ### ### ##  ###        #\n#       # # #   #   # #  #  # # # #  #         #\n#       ### #   #   ###  #  # # ##   #         #\n#       # # ### ### # #  #  ### # # ###        #\n#                                              #\n# Obfuscation by Allatori Obfuscator v6.5 DEMO #\n#                                              #\n#           http://www.allatori.com            #\n#                                              #\n################################################\n")) {
+                                methodNode.instructions.remove(ldcInsnNode.getPrevious());
+                                methodNode.instructions.remove(ldcInsnNode.getNext().getNext());
+                                methodNode.instructions.remove(ldcInsnNode.getNext());
+                                methodNode.instructions.remove(ldcInsnNode);
                             }
                         }
                     }

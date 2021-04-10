@@ -7,7 +7,6 @@ import org.objectweb.asm.tree.JumpInsnNode;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 
 public class GotoInlinerTransformer extends Transformer {
     @Override
@@ -17,7 +16,7 @@ public class GotoInlinerTransformer extends Transformer {
                 Arrays.stream(methodNode.instructions.toArray()).filter(abstractInsnNode -> abstractInsnNode.getOpcode() == GOTO).forEach(abstractInsnNode -> {
                     final JumpInsnNode gotoJump = (JumpInsnNode) abstractInsnNode;
                     final AbstractInsnNode insnAfterTarget = gotoJump.label.getNext();
-                    if (Objects.isNull(insnAfterTarget))
+                    if (insnAfterTarget == null)
                         return;
 
                     if (insnAfterTarget.getOpcode() != GOTO)

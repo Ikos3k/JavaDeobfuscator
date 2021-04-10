@@ -16,25 +16,25 @@ public class StaticCallOptimizerTransformer extends Transformer {
                 if (insnNode instanceof MethodInsnNode) {
                     MethodInsnNode methodInsnNode = (MethodInsnNode) insnNode;
                     AbstractInsnNode prev = methodInsnNode.getPrevious();
-                    if (prev instanceof LdcInsnNode && ((LdcInsnNode) prev).cst instanceof String && (matchMethodNode(methodInsnNode, "java/lang/Object.hashCode:()I") || matchMethodNode(methodInsnNode, "java/lang/String.hashCode:()I"))) {
-                        methodNode.instructions.insert(insnNode, getNumberInsn(((LdcInsnNode) prev).cst.hashCode()));
-                        methodNode.instructions.remove(insnNode);
-                        methodNode.instructions.remove(prev);
-                    }
-                    if (prev instanceof LdcInsnNode && ((LdcInsnNode) prev).cst instanceof String && matchMethodNode(methodInsnNode, "java/lang/String.length:()I")) {
-                        methodNode.instructions.insert(insnNode, getNumberInsn(((String) ((LdcInsnNode) prev).cst).length()));
-                        methodNode.instructions.remove(insnNode);
-                        methodNode.instructions.remove(prev);
-                    }
-                    if (prev instanceof LdcInsnNode && ((LdcInsnNode) prev).cst instanceof String && (matchMethodNode(methodInsnNode, "java/lang/String.toUpperCase:()Ljava/lang/String;"))) {
-                        methodNode.instructions.insert(insnNode, new LdcInsnNode(((String) ((LdcInsnNode) prev).cst).toUpperCase()));
-                        methodNode.instructions.remove(insnNode);
-                        methodNode.instructions.remove(prev);
-                    }
-                    if (prev instanceof LdcInsnNode && ((LdcInsnNode) prev).cst instanceof String && (matchMethodNode(methodInsnNode, "java/lang/String.toLowerCase:()Ljava/lang/String;"))) {
-                        methodNode.instructions.insert(insnNode, new LdcInsnNode(((String) ((LdcInsnNode) prev).cst).toLowerCase()));
-                        methodNode.instructions.remove(insnNode);
-                        methodNode.instructions.remove(prev);
+
+                    if(prev instanceof LdcInsnNode && ((LdcInsnNode) prev).cst instanceof String) {
+                        if(matchMethodNode(methodInsnNode, "java/lang/Object.hashCode:()I") || matchMethodNode(methodInsnNode, "java/lang/String.hashCode:()I")) {
+                            methodNode.instructions.insert(insnNode, getNumberInsn(((LdcInsnNode) prev).cst.hashCode()));
+                            methodNode.instructions.remove(insnNode);
+                            methodNode.instructions.remove(prev);
+                        } else if (matchMethodNode(methodInsnNode, "java/lang/String.length:()I")) {
+                            methodNode.instructions.insert(insnNode, getNumberInsn(((String) ((LdcInsnNode) prev).cst).length()));
+                            methodNode.instructions.remove(insnNode);
+                            methodNode.instructions.remove(prev);
+                        } else if (matchMethodNode(methodInsnNode, "java/lang/String.toUpperCase:()Ljava/lang/String;")) {
+                            methodNode.instructions.insert(insnNode, new LdcInsnNode(((String) ((LdcInsnNode) prev).cst).toUpperCase()));
+                            methodNode.instructions.remove(insnNode);
+                            methodNode.instructions.remove(prev);
+                        } else if(matchMethodNode(methodInsnNode, "java/lang/String.toLowerCase:()Ljava/lang/String;")) {
+                            methodNode.instructions.insert(insnNode, new LdcInsnNode(((String) ((LdcInsnNode) prev).cst).toLowerCase()));
+                            methodNode.instructions.remove(insnNode);
+                            methodNode.instructions.remove(prev);
+                        }
                     }
                 }
             }

@@ -8,11 +8,22 @@ import org.objectweb.asm.commons.SimpleRemapper;
 import org.objectweb.asm.tree.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 public class BytecodeUtils implements Opcodes {
+    public boolean isMainClass(ClassNode classNode) {
+        for (MethodNode method : classNode.methods) {
+            if(isMainMethod(method)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isMainMethod(MethodNode methodNode) { return methodNode.name.equals("main") && methodNode.desc.equals(createDescription(DESC_VOID, DESC_ARRAY_STRING)) && isPublic(methodNode.access) && isStatic(methodNode.access); }
 
     public boolean matchMethodNode(MethodInsnNode methodInsnNode, String s) { return s.equals(methodInsnNode.owner + "." + methodInsnNode.name + ":" + methodInsnNode.desc); }
@@ -56,35 +67,55 @@ public class BytecodeUtils implements Opcodes {
         }
     }
 
-    public byte DESC_EMPTY = -1;
-    public byte DESC_VOID = 0;
-    public byte DESC_OBJECT = 1;
-    public byte DESC_STRING = 2;
-    public byte DESC_INTEGER = 3;
-    public byte DESC_CLASS = 4;
-    public byte DESC_BOOLEAN_TYPE = 5;
-    public byte DESC_INT = 6;
-    public byte DESC_LONG = 7;
-    public byte DESC_FLOAT = 8;
-    public byte DESC_DOUBLE = 9;
-    public byte DESC_SHORT = 10;
-    public byte DESC_BOOLEAN = 11;
-    public byte DESC_CHAR = 12;
-    public byte DESC_BYTE = 13;
 
-    public byte DESC_ARRAY_OBJECT = 101;
-    public byte DESC_ARRAY_STRING = 102;
-    public byte DESC_ARRAY_INTEGER = 103;
-    public byte DESC_ARRAY_CLASS = 104;
-    public byte DESC_ARRAY_BOOLEAN_TYPE = 105;
-    public byte DESC_ARRAY_INT = 106;
-    public byte DESC_ARRAY_LONG = 107;
-    public byte DESC_ARRAY_FLOAT = 108;
-    public byte DESC_ARRAY_DOUBLE = 109;
-    public byte DESC_ARRAY_SHORT = 110;
-    public byte DESC_ARRAY_BOOLEAN = 111;
-    public byte DESC_ARRAY_CHAR = 112;
-    public byte DESC_ARRAY_BYTE = 113;
+    public <T> T findFirst(Collection<T> collection, Predicate<T> predicate) {
+        for (T t : collection)
+            if (predicate.test(t))
+                return t;
+        return null;
+    }
+
+    public MethodNode getMethod(ClassNode node, String name, String desc) {
+        return findFirst(node.methods, m -> m.name.equals(name) && m.desc.equals(desc));
+    }
+
+    public ClassNode getOwner(MethodNode m, Map<String, ClassNode> classMap) {
+        return findFirst(classMap.values(), c -> c.methods.contains(m));
+    }
+
+    public ClassNode getOwner(FieldNode f, Map<String, ClassNode> classMap) {
+        return findFirst(classMap.values(), c -> c.fields.contains(f));
+    }
+
+    public final byte DESC_EMPTY = -1;
+    public final byte DESC_VOID = 0;
+    public final byte DESC_OBJECT = 1;
+    public final byte DESC_STRING = 2;
+    public final byte DESC_INTEGER = 3;
+    public final byte DESC_CLASS = 4;
+    public final byte DESC_BOOLEAN_TYPE = 5;
+    public final byte DESC_INT = 6;
+    public final byte DESC_LONG = 7;
+    public final byte DESC_FLOAT = 8;
+    public final byte DESC_DOUBLE = 9;
+    public final byte DESC_SHORT = 10;
+    public final byte DESC_BOOLEAN = 11;
+    public final byte DESC_CHAR = 12;
+    public final byte DESC_BYTE = 13;
+
+    public final byte DESC_ARRAY_OBJECT = 101;
+    public final byte DESC_ARRAY_STRING = 102;
+    public final byte DESC_ARRAY_INTEGER = 103;
+    public final byte DESC_ARRAY_CLASS = 104;
+    public final byte DESC_ARRAY_BOOLEAN_TYPE = 105;
+    public final byte DESC_ARRAY_INT = 106;
+    public final byte DESC_ARRAY_LONG = 107;
+    public final byte DESC_ARRAY_FLOAT = 108;
+    public final byte DESC_ARRAY_DOUBLE = 109;
+    public final byte DESC_ARRAY_SHORT = 110;
+    public final byte DESC_ARRAY_BOOLEAN = 111;
+    public final byte DESC_ARRAY_CHAR = 112;
+    public final byte DESC_ARRAY_BYTE = 113;
 
     public String createDescription(byte returnType, byte... arguments) {
         StringBuilder desc = new StringBuilder();
@@ -112,6 +143,14 @@ public class BytecodeUtils implements Opcodes {
             if ((access & r) != 0) {
                 access &= ~r;
             }
+        }
+        return access;
+    }
+
+    public int setAccess(int... add) {
+        int access = 0;
+        for (int a : add) {
+            access |= a;
         }
         return access;
     }
@@ -172,6 +211,11 @@ public class BytecodeUtils implements Opcodes {
     }
 
     public boolean hasStrings(InsnList insnList, String... strings) {
+        AbstractInsnNode[] abstractInsnNodes = insnList.toArray();
+        if(strings.length > abstractInsnNodes.length) {
+            return false;
+        }
+
         int i = 0;
         for(String s : strings) {
             for (AbstractInsnNode ab : insnList.toArray()) {
@@ -187,12 +231,12 @@ public class BytecodeUtils implements Opcodes {
     }
 
     public static byte[] toByteArray(ClassNode classNode) {
-        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         try {
             classNode.accept(writer);
             return writer.toByteArray();
         } catch (Throwable t) {
-            writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            writer = new ClassWriter(0);
             classNode.accept(writer);
             return writer.toByteArray();
         }

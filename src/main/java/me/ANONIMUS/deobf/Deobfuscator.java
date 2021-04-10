@@ -97,8 +97,7 @@ public class Deobfuscator {
                     try {
                         if(BytecodeUtils.checkClassVerify(bytes)) {
                             final ClassNode classNode = new ClassNode();
-                            final ClassReader classReader = new ClassReader(bytes);
-                            classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
+                            new ClassReader(bytes).accept(classNode, ClassReader.EXPAND_FRAMES);
                             this.classes.put(classNode.name, classNode);
                         }
                     } catch (Exception e) {
@@ -113,8 +112,7 @@ public class Deobfuscator {
 
     private void saveJar(JarOutputStream jarOutputStream) throws IOException {
         for (ClassNode classNode : this.classes.values()) {
-            final JarEntry jarEntry = new JarEntry(classNode.name + ".class");
-            jarOutputStream.putNextEntry(jarEntry);
+            jarOutputStream.putNextEntry(new JarEntry(classNode.name + ".class"));
             jarOutputStream.write(BytecodeUtils.toByteArray(classNode));
             jarOutputStream.closeEntry();
         }

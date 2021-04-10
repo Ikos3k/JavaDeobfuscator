@@ -15,9 +15,10 @@ public class ClassNameTransformer extends Transformer {
         int i = 0;
         for (String key : keys) {
             ClassNode cn = classMap.get(key);
-            String name = "class_" + i;
-            remap.put(cn.name, name);
-            i++;
+            if(!isMainClass(cn)) {
+                remap.put(cn.name, "class_" + i);
+                i++;
+            }
         }
         applyMappings(classMap, remap);
     }

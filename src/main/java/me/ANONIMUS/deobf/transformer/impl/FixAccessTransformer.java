@@ -10,7 +10,12 @@ public class FixAccessTransformer extends Transformer {
     public void visit(Map<String, ClassNode> classMap) {
         classMap.values().forEach(classNode -> {
             classNode.access = fixAccess(classNode.access);
-            classNode.methods.forEach(methodNode -> methodNode.access = fixAccess(methodNode.access));
+            classNode.methods.forEach(methodNode -> {
+                methodNode.access = fixAccess(methodNode.access);
+                if(methodNode.parameters != null) {
+                    methodNode.parameters.forEach(pn -> pn.access = fixAccess(pn.access));
+                }
+            });
             classNode.fields.forEach(fieldNode -> fieldNode.access = fixAccess(fieldNode.access));
         });
     }

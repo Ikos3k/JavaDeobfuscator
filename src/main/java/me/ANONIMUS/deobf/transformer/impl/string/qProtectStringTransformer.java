@@ -13,13 +13,9 @@ public class qProtectStringTransformer extends Transformer {
     public void visit(Map<String, ClassNode> classMap) {
         classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
             for(AbstractInsnNode insn : methodNode.instructions.toArray()) {
-                if(insn instanceof LdcInsnNode) {
-                    if(((LdcInsnNode) insn).cst instanceof String) {
-                        if(insn.getPrevious() instanceof InsnNode && insn.getPrevious().getPrevious() instanceof LdcInsnNode) {
-                             methodNode.instructions.remove(insn.getNext());
-                             methodNode.instructions.set(insn, new LdcInsnNode(decode((String) ((LdcInsnNode) insn).cst)));
-                        }
-                    }
+                if(insn instanceof LdcInsnNode && ((LdcInsnNode) insn).cst instanceof String && insn.getPrevious() instanceof InsnNode && insn.getPrevious().getPrevious() instanceof LdcInsnNode) {
+                     methodNode.instructions.remove(insn.getNext());
+                     methodNode.instructions.set(insn, new LdcInsnNode(decode((String) ((LdcInsnNode) insn).cst)));
                 }
             }
         }));
@@ -30,8 +26,9 @@ public class qProtectStringTransformer extends Transformer {
             char[] var1 = var0.toCharArray();
             char[] var3 = new char[] {'䠲', '⎅', '⎆', '頓', '鄥', '䖂', 'ओ', '㐢', 'ࡓ', 'ܤ'};
             char[] var10000 = new char[] {'䠠', '萃', '蝓', '㠂', '㡀', '㢔', '蜹', 'း', '茄', '㌳'};
+
             for(int i = 0; i < var1.length; i++) {
-                var1[i] ^= var3[i % var3.length] ^ var10000[i % var10000.length];
+                var1[i] ^= var3[i % 10] ^ var10000[i % 10];
             }
             return new String(var1);
         } catch (Exception var7) {

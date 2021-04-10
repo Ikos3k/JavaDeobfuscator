@@ -13,20 +13,16 @@ public class FieldNameTransformer extends Transformer {
         Map<String, String> remap = new HashMap<>();
 
         List<FieldNode> fields = new ArrayList<>();
-        for (ClassNode c : classMap.values()) {
-            fields.addAll(c.fields);
-        }
+        classMap.values().forEach(c -> fields.addAll(c.fields));
         Collections.shuffle(fields);
         int i = 0;
         for (FieldNode f : fields) {
             ClassNode c = getOwner(f, classMap);
-            String name = "field_" + i;
             Stack<ClassNode> nodeStack = new Stack<>();
             nodeStack.add(c);
             while (nodeStack.size() > 0) {
                 ClassNode node = nodeStack.pop();
-                String key = node.name + "." + f.name;
-                remap.put(key, name);
+                remap.put(node.name + "." + f.name, "field_" + i);
                 nodeStack.addAll(classMap.values().stream().
                         filter(cn -> cn.superName.equals(node.name)).
                         collect(Collectors.toList()));
@@ -34,12 +30,5 @@ public class FieldNameTransformer extends Transformer {
             i++;
         }
         applyMappings(classMap, remap);
-    }
-
-    private ClassNode getOwner(FieldNode f, Map<String, ClassNode> classMap) {
-        for (ClassNode c : classMap.values())
-            if (c.fields.contains(f))
-                return c;
-        return null;
     }
 }
