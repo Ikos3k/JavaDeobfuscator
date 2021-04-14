@@ -33,8 +33,7 @@ public class MethodNameTransformer extends Transformer {
                 if (parent != null)
                     nodeStack.push(parent);
                 Set<ClassNode> interfaces = new HashSet<>();
-                String[] interfacesNames = node.interfaces.toArray(new String[0]);
-                for (String str : interfacesNames) {
+                for (String str : node.interfaces.toArray(new String[0])) {
                     ClassNode cn = classMap.get(str);
                     if (cn != null) {
                         interfaces.add(cn);

@@ -15,15 +15,6 @@ import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 public class BytecodeUtils implements Opcodes {
-    public boolean isMainClass(ClassNode classNode) {
-        for (MethodNode method : classNode.methods) {
-            if(isMainMethod(method)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public boolean isMainMethod(MethodNode methodNode) { return methodNode.name.equals("main") && methodNode.desc.equals(createDescription(DESC_VOID, DESC_ARRAY_STRING)) && isPublic(methodNode.access) && isStatic(methodNode.access); }
 
     public boolean matchMethodNode(MethodInsnNode methodInsnNode, String s) { return s.equals(methodInsnNode.owner + "." + methodInsnNode.name + ":" + methodInsnNode.desc); }
@@ -31,6 +22,36 @@ public class BytecodeUtils implements Opcodes {
     public boolean isInitializer(final MethodNode methodNode) { return methodNode.name.contains("<") || methodNode.name.contains(">"); }
 
     public static boolean checkClassVerify(byte[] bytes) { return String.format("%X%X%X%X", bytes[0], bytes[1], bytes[2], bytes[3]).equals("CAFEBABE"); }
+
+    public boolean isMainClass(ClassNode classNode) {
+        for (MethodNode method : classNode.methods)
+            if(isMainMethod(method))
+                return true;
+        return false;
+    }
+
+    public boolean isIntInsn(AbstractInsnNode insn) {
+        if (insn == null) {
+            return false;
+        }
+        int opcode = insn.getOpcode();
+        return ((opcode >= Opcodes.ICONST_M1 && opcode <= Opcodes.ICONST_5)
+                || opcode == Opcodes.BIPUSH
+                || opcode == Opcodes.SIPUSH
+                || (insn instanceof LdcInsnNode
+                && ((LdcInsnNode) insn).cst instanceof Integer));
+    }
+
+    public int getIntNumber(AbstractInsnNode insn) {
+        final int opcode = insn.getOpcode();
+        if (opcode >= Opcodes.ICONST_M1 && opcode <= Opcodes.ICONST_5)
+            return opcode - 3;
+        else if (insn instanceof IntInsnNode && insn.getOpcode() != Opcodes.NEWARRAY)
+            return ((IntInsnNode) insn).operand;
+        else if (insn instanceof LdcInsnNode && ((LdcInsnNode) insn).cst instanceof Integer)
+            return (Integer) ((LdcInsnNode) insn).cst;
+        throw new IllegalStateException("Unexpected instruction");
+    }
 
     public AbstractInsnNode getNumberInsn(int number) {
         if (number >= -1 && number <= 5) {
@@ -125,8 +146,7 @@ public class BytecodeUtils implements Opcodes {
         if (arguments.length > 0) {
             desc.append(")");
         }
-        desc.append(getDescription(returnType));
-        return desc.toString();
+        return desc.append(getDescription(returnType)).toString();
     }
 
     public int addAccess(int access, int... add) {

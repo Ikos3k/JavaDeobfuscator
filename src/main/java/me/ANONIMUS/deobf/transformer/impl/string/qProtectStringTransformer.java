@@ -15,13 +15,13 @@ public class qProtectStringTransformer extends Transformer {
             for(AbstractInsnNode insn : methodNode.instructions.toArray()) {
                 if(insn instanceof LdcInsnNode && ((LdcInsnNode) insn).cst instanceof String && insn.getPrevious() instanceof InsnNode && insn.getPrevious().getPrevious() instanceof LdcInsnNode) {
                      methodNode.instructions.remove(insn.getNext());
-                     methodNode.instructions.set(insn, new LdcInsnNode(decode((String) ((LdcInsnNode) insn).cst)));
+                     methodNode.instructions.set(insn, new LdcInsnNode(decrypt((String) ((LdcInsnNode) insn).cst)));
                 }
             }
         }));
     }
 
-    private String decode(String var0) {
+    private String decrypt(String var0) {
         try {
             char[] var1 = var0.toCharArray();
             char[] var3 = new char[] {'䠲', '⎅', '⎆', '頓', '鄥', '䖂', 'ओ', '㐢', 'ࡓ', 'ܤ'};

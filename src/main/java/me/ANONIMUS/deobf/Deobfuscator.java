@@ -1,5 +1,6 @@
 package me.ANONIMUS.deobf;
 
+import lombok.Getter;
 import me.ANONIMUS.deobf.transformer.Transformer;
 import me.ANONIMUS.deobf.transformer.impl.WatermarkTransformer;
 import me.ANONIMUS.deobf.util.BytecodeUtils;
@@ -17,6 +18,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
+@Getter
 public class Deobfuscator {
     private static Deobfuscator instance;
 
@@ -129,10 +131,6 @@ public class Deobfuscator {
             transformers.add(transformer);
         return this;
     }
-
-    public Map<String, byte[]> getFiles() { return files; }
-
-    public Map<String, ClassNode> getClasses() { return classes; }
 
     public static Deobfuscator getInstance() { return instance; }
 }

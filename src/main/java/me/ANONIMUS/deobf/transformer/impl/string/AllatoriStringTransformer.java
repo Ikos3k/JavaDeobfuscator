@@ -1,5 +1,6 @@
 package me.ANONIMUS.deobf.transformer.impl.string;
 
+import lombok.AllArgsConstructor;
 import me.ANONIMUS.deobf.transformer.Transformer;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -7,14 +8,10 @@ import org.objectweb.asm.tree.LdcInsnNode;
 
 import java.util.Map;
 
+@AllArgsConstructor
 public class AllatoriStringTransformer extends Transformer {
     private final int mode;
     private final boolean removeWatermark;
-
-    public AllatoriStringTransformer(int mode, boolean removeWatermark) {
-        this.mode = mode;
-        this.removeWatermark = removeWatermark;
-    }
 
     @Override
     public void visit(Map<String, ClassNode> classMap) {
