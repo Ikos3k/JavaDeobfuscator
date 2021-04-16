@@ -21,9 +21,10 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
                         LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
                         if (ldcInsnNode.getNext() != null && ldcInsnNode.getNext() instanceof LdcInsnNode) {
                             LdcInsnNode ldcInsnNodeNext = (LdcInsnNode) ldcInsnNode.getNext();
-                            if (ldcInsnNodeNext.getNext().getOpcode() == INVOKESTATIC) {
+                            if (ldcInsnNodeNext.getNext().getOpcode() == INVOKESTATIC && ldcInsnNodeNext.getNext().getType() == AbstractInsnNode.METHOD_INSN) {
+                                String name = ((MethodInsnNode) ldcInsnNodeNext.getNext()).name;
                                 for (MethodNode mn : classNode.methods) {
-                                    if (mn.name.equals(((MethodInsnNode) ldcInsnNodeNext.getNext()).name) && mn.desc.equals(createDescription(DESC_STRING, DESC_STRING, DESC_STRING))) {
+                                    if (mn.name.equals(name) && mn.desc.equals(createDescription(DESC_STRING, DESC_STRING, DESC_STRING))) {
                                         ldcInsnNodeNext.cst = decrypt(mn, (String) ldcInsnNode.cst, (String) ldcInsnNodeNext.cst);
                                         methodNode.instructions.remove(ldcInsnNodeNext.getNext());
                                         methodNode.instructions.remove(ldcInsnNode);
