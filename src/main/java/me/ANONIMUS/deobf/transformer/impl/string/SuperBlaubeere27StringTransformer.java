@@ -7,12 +7,15 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
 
 public class SuperBlaubeere27StringTransformer extends Transformer {
     @Override
-    public void visit(Map<String, ClassNode> classMap) {
-        classMap.values().forEach(classNode -> {
+    public void visit(List<ClassNode> classMap) {
+        classMap.forEach(classNode -> {
             List<MethodNode> methods = new ArrayList<>();
             classNode.methods.forEach(methodNode -> {
                 AbstractInsnNode[] abstractInsnNodes = methodNode.instructions.toArray();
@@ -28,7 +31,7 @@ public class SuperBlaubeere27StringTransformer extends Transformer {
                                         ldcInsnNodeNext.cst = decrypt(mn, (String) ldcInsnNode.cst, (String) ldcInsnNodeNext.cst);
                                         methodNode.instructions.remove(ldcInsnNodeNext.getNext());
                                         methodNode.instructions.remove(ldcInsnNode);
-                                        if(!methods.contains(mn))
+                                        if (!methods.contains(mn))
                                             methods.add(mn);
                                     }
                                 }

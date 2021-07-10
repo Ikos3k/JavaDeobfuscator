@@ -7,17 +7,17 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 
-import java.util.Map;
+import java.util.List;
 
 @AllArgsConstructor
 public class DashoStringTransformer extends Transformer {
     private final int mode;
 
     @Override
-    public void visit(Map<String, ClassNode> classMap) throws AnalyzerException {
-        classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
-            for(AbstractInsnNode insn : methodNode.instructions.toArray()) {
-                if(insn instanceof LdcInsnNode && ((LdcInsnNode) insn).cst instanceof String && insn.getNext() != null && isIntInsn(insn.getNext())) {
+    public void visit(List<ClassNode> classMap) throws AnalyzerException {
+        classMap.forEach(classNode -> classNode.methods.forEach(methodNode -> {
+            for (AbstractInsnNode insn : methodNode.instructions.toArray()) {
+                if (insn instanceof LdcInsnNode && ((LdcInsnNode) insn).cst instanceof String && insn.getNext() != null && isIntInsn(insn.getNext())) {
                     AbstractInsnNode abstractInsnNodeNEXT = insn.getNext();
                     methodNode.instructions.set(abstractInsnNodeNEXT, new LdcInsnNode(getDecryptedString((String) ((LdcInsnNode) insn).cst, getIntNumber(abstractInsnNodeNEXT), mode)));
                     methodNode.instructions.remove(insn);
@@ -47,7 +47,7 @@ public class DashoStringTransformer extends Transformer {
             int n5 = n3++;
             int n6 = n & n4 ^ cArray[n5];
             ++n;
-            cArray[n5] = (char)n6;
+            cArray[n5] = (char) n6;
         }
         return String.valueOf(cArray, 0, n2).intern();
     }
@@ -62,7 +62,7 @@ public class DashoStringTransformer extends Transformer {
             int n5 = n3++;
             int n6 = cArray[n5] ^ n & n4;
             n += 7;
-            cArray[n5] = (char)n6;
+            cArray[n5] = (char) n6;
         }
         return String.valueOf(cArray, 0, n2).intern();
     }

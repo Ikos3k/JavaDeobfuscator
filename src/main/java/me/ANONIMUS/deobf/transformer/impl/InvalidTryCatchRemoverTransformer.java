@@ -8,12 +8,12 @@ import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.BasicInterpreter;
 import org.objectweb.asm.tree.analysis.Frame;
 
-import java.util.Map;
+import java.util.List;
 
 public class InvalidTryCatchRemoverTransformer extends Transformer {
     @Override
-    public void visit(Map<String, ClassNode> classMap) throws AnalyzerException {
-        classMap.values().forEach(classNode -> classNode.methods.forEach(methodNode -> {
+    public void visit(List<ClassNode> classMap) throws AnalyzerException {
+        classMap.forEach(classNode -> classNode.methods.forEach(methodNode -> {
             methodNode.tryCatchBlocks.removeIf(tcb -> tcb.start == tcb.end || methodNode.instructions.indexOf(tcb.start) >= methodNode.instructions.indexOf(tcb.end));
 
             Analyzer<?> analyzer = new Analyzer<>(new BasicInterpreter());

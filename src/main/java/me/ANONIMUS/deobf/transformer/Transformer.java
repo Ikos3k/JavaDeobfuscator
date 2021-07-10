@@ -5,8 +5,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 
-import java.util.Map;
+import java.util.List;
 
 public abstract class Transformer extends BytecodeUtils implements Opcodes {
-    public abstract void visit(Map<String, ClassNode> classMap) throws AnalyzerException;
+    public abstract void visit(List<ClassNode> classMap) throws AnalyzerException;
 }

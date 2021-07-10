@@ -4,11 +4,11 @@ import me.ANONIMUS.deobf.transformer.Transformer;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 
-import java.util.Map;
+import java.util.List;
 
 public class SourceDebugRemoverTransformer extends Transformer {
     @Override
-    public void visit(Map<String, ClassNode> classMap) throws AnalyzerException {
-        classMap.values().forEach(classNode -> classNode.sourceDebug = null);
+    public void visit(List<ClassNode> classMap) throws AnalyzerException {
+        classMap.forEach(classNode -> classNode.sourceDebug = null);
     }
 }

@@ -4,13 +4,13 @@ import me.ANONIMUS.deobf.transformer.Transformer;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.util.Map;
+import java.util.List;
 
 public class WatermarkTransformer extends Transformer {
     @Override
-    public void visit(Map<String, ClassNode> classMap) {
+    public void visit(List<ClassNode> classMap) {
         final MethodNode methodNode = createMethod();
-        classMap.values().stream().filter(classNode -> !isInterface(classNode.access)).forEach(classNode -> classNode.methods.add(methodNode));
+        classMap.stream().filter(classNode -> !isInterface(classNode.access) && !isAbstract(classNode.access) && !isAnnotation(classNode.access)).forEach(classNode -> classNode.methods.add(methodNode));
     }
 
     private MethodNode createMethod() {

@@ -7,16 +7,17 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 
-import java.util.Map;
+import java.util.List;
 
 public class DebugInfoRemoverTransformer extends Transformer {
     @Override
-    public void visit(Map<String, ClassNode> classMap) throws AnalyzerException {
-       classMap.values().forEach(classNode -> {
+    public void visit(List<ClassNode> classMap) throws AnalyzerException {
+        classMap.forEach(classNode -> {
             ClassNode classNodeCopy = new ClassNode();
             new ClassReader(BytecodeUtils.toByteArray(classNode)).accept(classNodeCopy, ClassReader.SKIP_DEBUG);
 
-            Deobfuscator.getInstance().getClasses().replace(classNode.name, classNodeCopy);
+            Deobfuscator.getInstance().getClasses().remove(classNode);
+            Deobfuscator.getInstance().getClasses().add(classNode);
         });
     }
 }

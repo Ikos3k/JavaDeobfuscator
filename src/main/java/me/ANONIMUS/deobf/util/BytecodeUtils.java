@@ -9,23 +9,28 @@ import org.objectweb.asm.tree.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 public class BytecodeUtils implements Opcodes {
-    public boolean isMainMethod(MethodNode methodNode) { return methodNode.name.equals("main") && methodNode.desc.equals(createDescription(DESC_VOID, DESC_ARRAY_STRING)) && isPublic(methodNode.access) && isStatic(methodNode.access); }
+    public boolean isMainMethod(MethodNode methodNode) {
+        return methodNode.name.equals("main") && methodNode.desc.equals(createDescription(DESC_VOID, DESC_ARRAY_STRING)) && isPublic(methodNode.access) && isStatic(methodNode.access);
+    }
 
-    public boolean matchMethodNode(MethodInsnNode methodInsnNode, String s) { return s.equals(methodInsnNode.owner + "." + methodInsnNode.name + ":" + methodInsnNode.desc); }
+    public boolean isInitializer(final MethodNode methodNode) {
+        return methodNode.name.contains("<") || methodNode.name.contains(">");
+    }
 
-    public boolean isInitializer(final MethodNode methodNode) { return methodNode.name.contains("<") || methodNode.name.contains(">"); }
-
-    public static boolean checkClassVerify(byte[] bytes) { return String.format("%X%X%X%X", bytes[0], bytes[1], bytes[2], bytes[3]).equals("CAFEBABE"); }
+    public static boolean checkClassVerify(byte[] bytes) {
+        return String.format("%X%X%X%X", bytes[0], bytes[1], bytes[2], bytes[3]).equals("CAFEBABE");
+    }
 
     public boolean isMainClass(ClassNode classNode) {
         for (MethodNode method : classNode.methods)
-            if(isMainMethod(method))
+            if (isMainMethod(method))
                 return true;
         return false;
     }
@@ -35,34 +40,22 @@ public class BytecodeUtils implements Opcodes {
             return false;
         }
         int opcode = insn.getOpcode();
-        return ((opcode >= Opcodes.ICONST_M1 && opcode <= Opcodes.ICONST_5)
-                || opcode == Opcodes.BIPUSH
-                || opcode == Opcodes.SIPUSH
+        return ((opcode >= ICONST_M1 && opcode <= ICONST_5)
+                || opcode == BIPUSH
+                || opcode == SIPUSH
                 || (insn instanceof LdcInsnNode
                 && ((LdcInsnNode) insn).cst instanceof Integer));
     }
 
     public int getIntNumber(AbstractInsnNode insn) {
         final int opcode = insn.getOpcode();
-        if (opcode >= Opcodes.ICONST_M1 && opcode <= Opcodes.ICONST_5)
+        if (opcode >= ICONST_M1 && opcode <= ICONST_5)
             return opcode - 3;
-        else if (insn instanceof IntInsnNode && insn.getOpcode() != Opcodes.NEWARRAY)
+        else if (insn instanceof IntInsnNode && insn.getOpcode() != NEWARRAY)
             return ((IntInsnNode) insn).operand;
         else if (insn instanceof LdcInsnNode && ((LdcInsnNode) insn).cst instanceof Integer)
             return (Integer) ((LdcInsnNode) insn).cst;
         throw new IllegalStateException("Unexpected instruction");
-    }
-
-    public AbstractInsnNode getNumberInsn(int number) {
-        if (number >= -1 && number <= 5) {
-            return new InsnNode(number + 3);
-        } else if (number >= -128 && number <= 127) {
-            return new IntInsnNode(BIPUSH, number);
-        } else if (number >= -32768 && number <= 32767) {
-            return new IntInsnNode(SIPUSH, number);
-        } else {
-            return new LdcInsnNode(number);
-        }
     }
 
     public <T extends AbstractInsnNode> void forEach(InsnList instructions, Class<T> type, Consumer<T> consumer) {
@@ -78,13 +71,14 @@ public class BytecodeUtils implements Opcodes {
         forEach(instructions, AbstractInsnNode.class, consumer);
     }
 
-    public void applyMappings(Map<String, ClassNode> classMap, Map<String, String> remap) {
+    public void applyMappings(List<ClassNode> classMap, Map<String, String> remap) {
         SimpleRemapper remapper = new SimpleRemapper(remap);
-        for (ClassNode node : new ArrayList<>(classMap.values())) {
+        for (ClassNode node : new ArrayList<>(classMap)) {
             ClassNode copy = new ClassNode();
             ClassRemapper adapter = new ClassRemapper(copy, remapper);
             node.accept(adapter);
-            classMap.put(node.name, copy);
+            classMap.remove(node);
+            classMap.add(copy);
         }
     }
 
@@ -100,12 +94,16 @@ public class BytecodeUtils implements Opcodes {
         return findFirst(node.methods, m -> m.name.equals(name) && m.desc.equals(desc));
     }
 
-    public ClassNode getOwner(MethodNode m, Map<String, ClassNode> classMap) {
-        return findFirst(classMap.values(), c -> c.methods.contains(m));
+    public ClassNode getOwner(MethodNode m, List<ClassNode> classMap) {
+        return findFirst(classMap, c -> c.methods.contains(m));
     }
 
-    public ClassNode getOwner(FieldNode f, Map<String, ClassNode> classMap) {
-        return findFirst(classMap.values(), c -> c.fields.contains(f));
+    public ClassNode getOwner(FieldNode f, List<ClassNode> classMap) {
+        return findFirst(classMap, c -> c.fields.contains(f));
+    }
+
+    public ClassNode getClassNode(String name, List<ClassNode> classMap) {
+        return findFirst(classMap, c -> c.name.equals(name));
     }
 
     public final byte DESC_EMPTY = -1;
@@ -149,34 +147,8 @@ public class BytecodeUtils implements Opcodes {
         return desc.append(getDescription(returnType)).toString();
     }
 
-    public int addAccess(int access, int... add) {
-        for (int a : add) {
-            if ((access & a) == 0) {
-                access |= a;
-            }
-        }
-        return access;
-    }
-
-    public int removeAccess(int access, int... remove) {
-        for (int r : remove) {
-            if ((access & r) != 0) {
-                access &= ~r;
-            }
-        }
-        return access;
-    }
-
-    public int setAccess(int... add) {
-        int access = 0;
-        for (int a : add) {
-            access |= a;
-        }
-        return access;
-    }
-
     private String getDescription(byte type) {
-        if(type > 100) {
+        if (type > 100) {
             return "[" + getDescription((byte) (type - 100));
         }
         switch (type) {
@@ -215,14 +187,14 @@ public class BytecodeUtils implements Opcodes {
 
     public boolean hasInstructions(InsnList insnList, int... opcodes) {
         AbstractInsnNode[] abstractInsnNodes = insnList.toArray();
-        if(opcodes.length > abstractInsnNodes.length) {
+        if (opcodes.length > abstractInsnNodes.length) {
             return false;
         }
 
         int i = 0;
-        for(int opcode : opcodes) {
-            for(AbstractInsnNode ab : abstractInsnNodes) {
-                if(ab.getOpcode() == opcode) {
+        for (int opcode : opcodes) {
+            for (AbstractInsnNode ab : abstractInsnNodes) {
+                if (ab.getOpcode() == opcode) {
                     i++;
                 }
             }
@@ -232,16 +204,16 @@ public class BytecodeUtils implements Opcodes {
 
     public boolean hasStrings(InsnList insnList, String... strings) {
         AbstractInsnNode[] abstractInsnNodes = insnList.toArray();
-        if(strings.length > abstractInsnNodes.length) {
+        if (strings.length > abstractInsnNodes.length) {
             return false;
         }
 
         int i = 0;
-        for(String s : strings) {
+        for (String s : strings) {
             for (AbstractInsnNode ab : insnList.toArray()) {
                 if (ab.getType() == AbstractInsnNode.LDC_INSN) {
                     LdcInsnNode ldcInsnNode = (LdcInsnNode) ab;
-                    if(ldcInsnNode.cst.equals(s)) {
+                    if (ldcInsnNode.cst.equals(s)) {
                         i++;
                     }
                 }
@@ -262,53 +234,138 @@ public class BytecodeUtils implements Opcodes {
         }
     }
 
-    public int computeConstantPoolSize(ClassNode classNode) { return new ClassReader(toByteArray(classNode)).getItemCount(); }
+    public int computeConstantPoolSize(ClassNode classNode) {
+        return new ClassReader(toByteArray(classNode)).getItemCount();
+    }
 
-    public boolean isPublic(int access) { return (access & ACC_PUBLIC) != 0; }
+    public int addAccess(int access, int... add) {
+        for (int a : add) {
+            if ((access & a) == 0) {
+                access |= a;
+            }
+        }
+        return access;
+    }
 
-    public boolean isProtected(int access) { return (access & ACC_PROTECTED) != 0; }
+    public int removeAccess(int access, int... remove) {
+        for (int r : remove) {
+            if ((access & r) != 0) {
+                access &= ~r;
+            }
+        }
+        return access;
+    }
 
-    public boolean isPrivate(int access) { return (access & ACC_PRIVATE) != 0; }
+    public int setAccess(int... add) {
+        int access = 0;
+        for (int a : add) {
+            access |= a;
+        }
+        return access;
+    }
 
-    public boolean isStatic(int access) { return (access & ACC_STATIC) != 0; }
+    public boolean hasAccess(int access, int... check) {
+        for (int a : check) {
+            if ((access & a) == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-    public boolean isStaticPhase(int access) { return (access & ACC_STATIC_PHASE) != 0; }
+    public boolean isPublic(int access) {
+        return (access & ACC_PUBLIC) != 0;
+    }
 
-    public boolean isStrict(int access) { return (access & ACC_STRICT) != 0; }
+    public boolean isProtected(int access) {
+        return (access & ACC_PROTECTED) != 0;
+    }
 
-    public boolean isSuper(int access) { return (access & ACC_SUPER) != 0; }
+    public boolean isPrivate(int access) {
+        return (access & ACC_PRIVATE) != 0;
+    }
 
-    public boolean isNative(int access) { return (access & ACC_NATIVE) != 0; }
+    public boolean isStatic(int access) {
+        return (access & ACC_STATIC) != 0;
+    }
 
-    public boolean isMandated(int access) { return (access & ACC_MANDATED) != 0; }
+    public boolean isStaticPhase(int access) {
+        return (access & ACC_STATIC_PHASE) != 0;
+    }
 
-    public boolean isModule(int access) { return (access & ACC_MODULE) != 0; }
+    public boolean isStrict(int access) {
+        return (access & ACC_STRICT) != 0;
+    }
 
-    public boolean isOpen(int access) { return (access & ACC_OPEN) != 0; }
+    public boolean isSuper(int access) {
+        return (access & ACC_SUPER) != 0;
+    }
 
-    public boolean isAbstract(int access) { return (access & ACC_ABSTRACT) != 0; }
+    public boolean isNative(int access) {
+        return (access & ACC_NATIVE) != 0;
+    }
 
-    public boolean isFinal(int access) { return (access & ACC_FINAL) != 0; }
+    public boolean isMandated(int access) {
+        return (access & ACC_MANDATED) != 0;
+    }
 
-    public boolean isSynthetic(int access) { return (access & ACC_SYNTHETIC) != 0; }
+    public boolean isModule(int access) {
+        return (access & ACC_MODULE) != 0;
+    }
 
-    public boolean isTransient(int access) { return (access & ACC_TRANSIENT) != 0; }
+    public boolean isOpen(int access) {
+        return (access & ACC_OPEN) != 0;
+    }
 
-    public boolean isTransitive(int access) { return (access & ACC_TRANSITIVE) != 0; }
+    public boolean isAbstract(int access) {
+        return (access & ACC_ABSTRACT) != 0;
+    }
 
-    public boolean isVolatile(int access) { return (access & ACC_VOLATILE) != 0; }
+    public boolean isFinal(int access) {
+        return (access & ACC_FINAL) != 0;
+    }
 
-    public boolean isVarargs(int access) { return (access & ACC_VARARGS) != 0; }
+    public boolean isSynthetic(int access) {
+        return (access & ACC_SYNTHETIC) != 0;
+    }
 
-    public boolean isBridge(int access) { return (access & ACC_BRIDGE) != 0; }
+    public boolean isTransient(int access) {
+        return (access & ACC_TRANSIENT) != 0;
+    }
 
-    public boolean isSynchronized(int access) { return (access & ACC_SYNCHRONIZED) != 0; }
+    public boolean isTransitive(int access) {
+        return (access & ACC_TRANSITIVE) != 0;
+    }
 
-    public boolean isInterface(int access) { return (access & ACC_INTERFACE) != 0; }
+    public boolean isVolatile(int access) {
+        return (access & ACC_VOLATILE) != 0;
+    }
 
-    public boolean isEnum(int access) { return (access & ACC_ENUM) != 0; }
+    public boolean isVarargs(int access) {
+        return (access & ACC_VARARGS) != 0;
+    }
 
-    public boolean isAnnotation(int access) { return (access & ACC_ANNOTATION) != 0; }
+    public boolean isBridge(int access) {
+        return (access & ACC_BRIDGE) != 0;
+    }
 
-    public boolean isDeprecated(int access) { return (access & ACC_DEPRECATED) != 0; }
+    public boolean isSynchronized(int access) {
+        return (access & ACC_SYNCHRONIZED) != 0;
+    }
+
+    public boolean isInterface(int access) {
+        return (access & ACC_INTERFACE) != 0;
+    }
+
+    public boolean isEnum(int access) {
+        return (access & ACC_ENUM) != 0;
+    }
+
+    public boolean isAnnotation(int access) {
+        return (access & ACC_ANNOTATION) != 0;
+    }
+
+    public boolean isDeprecated(int access) {
+        return (access & ACC_DEPRECATED) != 0;
+    }
 }

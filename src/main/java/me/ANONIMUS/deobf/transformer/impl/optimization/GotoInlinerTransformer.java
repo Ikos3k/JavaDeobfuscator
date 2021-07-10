@@ -6,25 +6,25 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 
 public class GotoInlinerTransformer extends Transformer {
     @Override
-    public void visit(Map<String, ClassNode> classMap) {
-        classMap.values().forEach(classNode ->
-            classNode.methods.forEach(methodNode ->
-                Arrays.stream(methodNode.instructions.toArray()).filter(abstractInsnNode -> abstractInsnNode.getOpcode() == GOTO).forEach(abstractInsnNode -> {
-                    final JumpInsnNode gotoJump = (JumpInsnNode) abstractInsnNode;
-                    final AbstractInsnNode insnAfterTarget = gotoJump.label.getNext();
-                    if (insnAfterTarget == null)
-                        return;
+    public void visit(List<ClassNode> classMap) {
+        classMap.forEach(classNode ->
+                classNode.methods.forEach(methodNode ->
+                        Arrays.stream(methodNode.instructions.toArray()).filter(abstractInsnNode -> abstractInsnNode.getOpcode() == GOTO).forEach(abstractInsnNode -> {
+                            final JumpInsnNode gotoJump = (JumpInsnNode) abstractInsnNode;
+                            final AbstractInsnNode insnAfterTarget = gotoJump.label.getNext();
+                            if (insnAfterTarget == null)
+                                return;
 
-                    if (insnAfterTarget.getOpcode() != GOTO)
-                        return;
+                            if (insnAfterTarget.getOpcode() != GOTO)
+                                return;
 
-                    gotoJump.label = ((JumpInsnNode) insnAfterTarget).label;
-                })
-            )
+                            gotoJump.label = ((JumpInsnNode) insnAfterTarget).label;
+                        })
+                )
         );
     }
 }

@@ -23,13 +23,14 @@ public class Deobfuscator {
     private static Deobfuscator instance;
 
     private final List<Transformer> transformers;
-    private final Map<String, ClassNode> classes;
     private final Map<String, byte[]> files;
+    private final List<ClassNode> classes;
 
     public Deobfuscator() {
         instance = this;
-        this.classes = new HashMap<>();
+
         this.files = new HashMap<>();
+        this.classes = new ArrayList<>();
         this.transformers = new ArrayList<>();
     }
 
@@ -74,14 +75,7 @@ public class Deobfuscator {
 
         System.out.println();
         System.out.println("[INFO] Finished, saving the file...");
-        try {
-            try (JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(out))) {
-                saveJar(jarOutputStream);
-                System.out.println("[INFO] Successful saved " + out.getName());
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        saveJar(out);
     }
 
     private void loadJar(File file) {
@@ -97,10 +91,10 @@ public class Deobfuscator {
                     }
 
                     try {
-                        if(BytecodeUtils.checkClassVerify(bytes)) {
+                        if (BytecodeUtils.checkClassVerify(bytes)) {
                             final ClassNode classNode = new ClassNode();
                             new ClassReader(bytes).accept(classNode, ClassReader.EXPAND_FRAMES);
-                            this.classes.put(classNode.name, classNode);
+                            this.classes.add(classNode);
                         }
                     } catch (Exception e) {
                         System.err.println("[ERROR] There was an error loading " + jarEntry.getName());
@@ -112,25 +106,32 @@ public class Deobfuscator {
         }
     }
 
-    private void saveJar(JarOutputStream jarOutputStream) throws IOException {
-        for (ClassNode classNode : this.classes.values()) {
-            jarOutputStream.putNextEntry(new JarEntry(classNode.name + ".class"));
-            jarOutputStream.write(BytecodeUtils.toByteArray(classNode));
-            jarOutputStream.closeEntry();
-        }
+    private void saveJar(File out) {
+        try (JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(out))) {
+            for (ClassNode classNode : this.classes) {
+                jarOutputStream.putNextEntry(new JarEntry(classNode.name + ".class"));
+                jarOutputStream.write(BytecodeUtils.toByteArray(classNode));
+                jarOutputStream.closeEntry();
+            }
 
-        for (Map.Entry<String, byte[]> entry : this.files.entrySet()) {
-            jarOutputStream.putNextEntry(new JarEntry(entry.getKey()));
-            jarOutputStream.write(entry.getValue());
-            jarOutputStream.closeEntry();
+            for (Map.Entry<String, byte[]> entry : this.files.entrySet()) {
+                jarOutputStream.putNextEntry(new JarEntry(entry.getKey()));
+                jarOutputStream.write(entry.getValue());
+                jarOutputStream.closeEntry();
+            }
+            System.out.println("[INFO] Successful saved " + out.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public Deobfuscator addTransformer(Transformer transformer) {
-        if(!transformers.contains(transformer))
+        if (!transformers.contains(transformer))
             transformers.add(transformer);
         return this;
     }
 
-    public static Deobfuscator getInstance() { return instance; }
+    public static Deobfuscator getInstance() {
+        return instance;
+    }
 }

@@ -1,11 +1,11 @@
 package me.ANONIMUS.deobf;
 
-import me.ANONIMUS.deobf.transformer.impl.string.SuperBlaubeere27StringTransformer;
-
 public class DeobfuscatorInitializer {
     public static void main(String[] args) {
         new Deobfuscator()
-                .addTransformer(new SuperBlaubeere27StringTransformer())
+//                .addTransformer(new LocalVariableRemoverTransformer())
+//                .addTransformer(new SignatureRemoverTransformer())
+//                .addTransformer(new FieldNameTransformer())
                 .run(args);
     }
 }

@@ -4,12 +4,12 @@ import me.ANONIMUS.deobf.transformer.Transformer;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
-import java.util.Map;
+import java.util.List;
 
 public class IllegalSignatureRemoverTransformer extends Transformer {
     @Override
-    public void visit(Map<String, ClassNode> classMap) {
-        classMap.values().forEach(classNode -> {
+    public void visit(List<ClassNode> classMap) {
+        classMap.forEach(classNode -> {
             if (classNode.signature != null) {
                 try {
                     CheckClassAdapter.checkClassSignature(classNode.signature);

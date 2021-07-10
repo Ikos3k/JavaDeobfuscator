@@ -6,9 +6,13 @@ import org.objectweb.asm.tree.analysis.AnalyzerException;
 
 import java.util.List;
 
-public class SourceFileRemoverTransformer extends Transformer {
+public class SignatureRemoverTransformer extends Transformer {
     @Override
     public void visit(List<ClassNode> classMap) throws AnalyzerException {
-        classMap.forEach(classNode -> classNode.sourceFile = null);
+        classMap.forEach(classNode -> {
+            classNode.signature = null;
+            classNode.methods.forEach(methodNode -> methodNode.signature = null);
+            classNode.fields.forEach(fieldNode -> fieldNode.signature = null);
+        });
     }
 }

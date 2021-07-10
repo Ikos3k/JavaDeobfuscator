@@ -8,11 +8,11 @@ import java.util.*;
 
 public class MethodNameTransformer extends Transformer {
     @Override
-    public void visit(Map<String, ClassNode> classMap) {
+    public void visit(List<ClassNode> classMap) {
         Map<String, String> remap = new HashMap<>();
 
         List<MethodNode> methods = new LinkedList<>();
-        classMap.values().forEach(c -> methods.addAll(c.methods));
+        classMap.forEach(c -> methods.addAll(c.methods));
 
         Collections.shuffle(methods);
         int i = 0;
@@ -29,12 +29,12 @@ public class MethodNameTransformer extends Transformer {
                 ClassNode node = nodeStack.pop();
                 if (node != owner && getMethod(node, m.name, m.desc) != null)
                     continue methods;
-                ClassNode parent = classMap.get(node.superName);
+                ClassNode parent = getClassNode(node.superName, classMap);
                 if (parent != null)
                     nodeStack.push(parent);
                 Set<ClassNode> interfaces = new HashSet<>();
                 for (String str : node.interfaces.toArray(new String[0])) {
-                    ClassNode cn = classMap.get(str);
+                    ClassNode cn = getClassNode(str, classMap);
                     if (cn != null) {
                         interfaces.add(cn);
                     }
@@ -45,7 +45,7 @@ public class MethodNameTransformer extends Transformer {
             while (nodeStack.size() > 0) {
                 ClassNode node = nodeStack.pop();
                 remap.put(node.name + '.' + m.name + m.desc, "method_" + i);
-                classMap.values().stream().filter(c -> c.superName.equals(node.name) || c.interfaces.contains(node.name)).forEach(nodeStack::push);
+                classMap.stream().filter(c -> c.superName.equals(node.name) || c.interfaces.contains(node.name)).forEach(nodeStack::push);
             }
             i++;
         }
